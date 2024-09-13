@@ -30,3 +30,8 @@ func (d DatabaseConfig) GetDSN() string {
 	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		d.Host, d.Port, d.User, d.Password, d.Database)
 }
+
+func (d DatabaseConfig) GetURL() string {
+	return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable",
+		d.User, d.Password, d.Host, d.Port, d.Database)
+}
