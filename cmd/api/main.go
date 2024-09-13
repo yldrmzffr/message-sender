@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/kelseyhightower/envconfig"
 	"message-sender/config"
+	"message-sender/internal/pkg/logger"
 )
 
 var (
@@ -20,6 +21,10 @@ func configSetup() {
 
 func main() {
 	configSetup()
+
+	logger.InitLogger(&cfg.Log)
+
+	logger.Info("Starting application...")
 
 	fmt.Println("Hello, World!")
 }
