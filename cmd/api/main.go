@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"github.com/kelseyhightower/envconfig"
 	"message-sender/config"
+	"message-sender/internal/common/database"
 	"message-sender/internal/pkg/logger"
 )
 
@@ -14,15 +15,27 @@ var (
 func configSetup() {
 	err := envconfig.Process("", &cfg)
 	if err != nil {
-		fmt.Println("Error loading config")
+		logger.Error("Config setup error", err)
 		return
 	}
 }
 
 func main() {
+	ctx := context.Background()
+
 	configSetup()
 
 	logger.InitLogger(&cfg.Log)
 
 	logger.Info("Starting application...")
+
+	// Database connection
+	db, err := database.NewPostgresDatabase(ctx, &database.PostgresConfig{DSN: cfg.Database.GetDSN()})
+	if err != nil {
+		logger.Error("Database Connection Error", err)
+		return
+	}
+
+	defer database.ClosePostgresConnection(db)
+
 }
