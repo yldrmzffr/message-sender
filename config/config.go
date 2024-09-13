@@ -2,6 +2,7 @@ package config
 
 type Config struct {
 	Service ServiceConfig
+	Log     LogConfig
 }
 
 type ServiceConfig struct {
