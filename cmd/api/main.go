@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"github.com/kelseyhightower/envconfig"
-	"log"
 	"message-sender/config"
 	"message-sender/internal/common/database"
 	"message-sender/internal/pkg/logger"
@@ -24,7 +23,8 @@ func configSetup() {
 func migrateDatabase(cfg *config.DatabaseConfig) {
 	dbUrl := cfg.GetURL()
 	if err := database.RunMigrations(dbUrl); err != nil {
-		log.Fatalf("Error running migrations: %v", err)
+		logger.Error("Database migrations error", err)
+		return
 	}
 }
 
