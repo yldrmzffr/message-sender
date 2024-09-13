@@ -25,6 +25,4 @@ func main() {
 	logger.InitLogger(&cfg.Log)
 
 	logger.Info("Starting application...")
-
-	fmt.Println("Hello, World!")
 }
