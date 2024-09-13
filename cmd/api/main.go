@@ -20,6 +20,14 @@ func configSetup() {
 	}
 }
 
+func migrateDatabase(cfg *config.DatabaseConfig) {
+	dbUrl := cfg.GetURL()
+	if err := database.RunMigrations(dbUrl); err != nil {
+		logger.Error("Database migrations error", err)
+		return
+	}
+}
+
 func main() {
 	ctx := context.Background()
 
@@ -28,6 +36,9 @@ func main() {
 	logger.InitLogger(&cfg.Log)
 
 	logger.Info("Starting application...")
+
+	// Migrate database
+	migrateDatabase(&cfg.Database)
 
 	// Database connection
 	db, err := database.NewPostgresDatabase(ctx, &database.PostgresConfig{DSN: cfg.Database.GetDSN()})
