@@ -40,10 +40,11 @@ An automated message sending system built with Go.
 
 2. Start all services using Docker Compose:
    ```
-   docker-compose up --build
+   sudo docker-compose up --build
    ```
+   Note: The sudo command is required to run Docker with elevated privileges. If you've configured Docker to run without sudo, you can omit it.
+   Also note: When using Docker Compose, you don't need to create a .env file. The necessary environment variables are defined in the docker-compose.yml file.
 
-   Note: When using Docker Compose, you don't need to create a `.env` file. The necessary environment variables are defined in the `docker-compose.yml` file.
 
 3. The application will be accessible at `http://localhost:8080`.
 
