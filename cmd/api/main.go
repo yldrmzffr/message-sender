@@ -3,12 +3,15 @@ package main
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kelseyhightower/envconfig"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
 	"message-sender/config"
+	_ "message-sender/docs"
 	"message-sender/internal/common/database"
+	"message-sender/internal/messages"
 	"message-sender/internal/pkg/logger"
 	"message-sender/internal/pkg/middleware"
 )
@@ -31,6 +34,10 @@ func migrateDatabase(cfg *config.DatabaseConfig) {
 		logger.Error("Database migrations error", err)
 		return
 	}
+}
+
+func loadModules(r *gin.Engine, db *pgxpool.Pool) {
+	messages.ConfigureMessagesModule(r, db)
 }
 
 // @title           Message Sender API
@@ -70,6 +77,9 @@ func main() {
 
 	// Swagger setup
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// Register modules
+	loadModules(r, db)
 
 	port := cfg.Service.Port
 
