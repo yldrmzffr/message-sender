@@ -1,5 +1,7 @@
 package apperrors
 
+// ErrorResponse represents an API error response
+// swagger:response ErrorResponse
 type ErrorResponse struct {
 	ErrorCode int    `json:"errorCode"`
 	Message   string `json:"message"`

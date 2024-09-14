@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/kelseyhightower/envconfig"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
 	"message-sender/config"
 	"message-sender/internal/common/database"
@@ -31,6 +33,11 @@ func migrateDatabase(cfg *config.DatabaseConfig) {
 	}
 }
 
+// @title           Message Sender API
+// @version         0.1
+// @description     This is a message sender service. You can use this API to send messages to users.
+// @host      localhost:8080
+// @BasePath  /
 func main() {
 	ctx := context.Background()
 
@@ -61,11 +68,8 @@ func main() {
 
 	r.Use(middleware.HandleError())
 
-	r.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "Hello World!",
-		})
-	})
+	// Swagger setup
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	port := cfg.Service.Port
 
