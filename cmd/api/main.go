@@ -95,6 +95,9 @@ func main() {
 
 	// Swagger setup
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/", func(c *gin.Context) {
+		c.Redirect(301, "/swagger/index.html")
+	})
 
 	// Register modules
 	loadModules(r, &cfg, db, rdsCli)
