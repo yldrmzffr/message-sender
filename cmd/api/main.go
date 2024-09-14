@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"github.com/gin-gonic/gin"
 	"github.com/kelseyhightower/envconfig"
+	"go.uber.org/zap"
 	"message-sender/config"
 	"message-sender/internal/common/database"
 	"message-sender/internal/pkg/logger"
+	"message-sender/internal/pkg/middleware"
 )
 
 var (
@@ -35,6 +38,10 @@ func main() {
 
 	logger.InitLogger(&cfg.Log)
 
+	// Set default logger
+	gin.DefaultWriter = zap.NewStdLog(logger.Log).Writer()
+	gin.DefaultErrorWriter = zap.NewStdLog(logger.Log).Writer()
+
 	logger.Info("Starting application...")
 
 	// Migrate database
@@ -49,4 +56,21 @@ func main() {
 
 	defer database.ClosePostgresConnection(db)
 
+	// Gin setup
+	r := gin.Default()
+
+	r.Use(middleware.HandleError())
+
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "Hello World!",
+		})
+	})
+
+	port := cfg.Service.Port
+
+	if err := r.Run(":" + port); err != nil {
+		logger.Error("Error starting server", err)
+		return
+	}
 }
