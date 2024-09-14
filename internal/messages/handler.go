@@ -3,6 +3,7 @@ package messages
 import (
 	"github.com/gin-gonic/gin"
 	"message-sender/internal/pkg/apperrors"
+	"time"
 )
 
 type Handler struct {
@@ -38,5 +39,13 @@ func (h *Handler) CreateMessage(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(201, createdMessage)
+	response := MessageResponse{
+		ID:        createdMessage.ID,
+		Recipient: createdMessage.Recipient,
+		Content:   createdMessage.Content,
+		Status:    createdMessage.Status,
+		CreatedAt: createdMessage.CreatedAt.Format(time.RFC3339),
+	}
+
+	ctx.JSON(201, response)
 }
