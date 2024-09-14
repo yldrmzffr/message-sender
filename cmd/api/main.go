@@ -5,12 +5,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kelseyhightower/envconfig"
+	redislib "github.com/redis/go-redis/v9"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
 	"message-sender/config"
 	_ "message-sender/docs"
 	"message-sender/internal/common/database"
+	"message-sender/internal/common/redis"
 	"message-sender/internal/messages"
 	"message-sender/internal/notification"
 	"message-sender/internal/pkg/logger"
@@ -37,7 +39,7 @@ func migrateDatabase(cfg *config.DatabaseConfig) {
 	}
 }
 
-func loadModules(r *gin.Engine, db *pgxpool.Pool) {
+func loadModules(r *gin.Engine, db *pgxpool.Pool, rdsCli *redislib.Client) {
 	// todo: Provider should be configurable from env
 	ns, err := notification.ConfigureNotificationModule(notification.MockSms)
 	if err != nil {
@@ -45,7 +47,7 @@ func loadModules(r *gin.Engine, db *pgxpool.Pool) {
 		return
 	}
 
-	messages.ConfigureMessagesModule(r, db, ns)
+	messages.ConfigureMessagesModule(r, db, ns, rdsCli)
 }
 
 // @title           Message Sender API
@@ -70,13 +72,22 @@ func main() {
 	migrateDatabase(&cfg.Database)
 
 	// Database connection
-	db, err := database.NewPostgresDatabase(ctx, &database.PostgresConfig{DSN: cfg.Database.GetDSN()})
+	db, err := database.NewPostgresDatabase(ctx, &database.PostgreConfig{DSN: cfg.Database.GetDSN()})
 	if err != nil {
 		logger.Error("Database Connection Error", err)
 		return
 	}
 
 	defer database.ClosePostgresConnection(db)
+
+	// Redis connection
+	rdsCli, err := redis.NewRedis(ctx, &redis.Config{Url: cfg.Redis.Url})
+	if err != nil {
+		logger.Error("Redis Connection Error", err)
+		return
+	}
+
+	defer redis.CloseRedisConnection(rdsCli)
 
 	// Gin setup
 	r := gin.Default()
@@ -87,7 +98,7 @@ func main() {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Register modules
-	loadModules(r, db)
+	loadModules(r, db, rdsCli)
 
 	port := cfg.Service.Port
 
