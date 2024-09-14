@@ -2,17 +2,20 @@ package messages
 
 import (
 	"context"
+	"message-sender/internal/notification"
 	"message-sender/internal/pkg/apperrors"
 	"message-sender/internal/pkg/logger"
 )
 
 type Service struct {
-	messageRepository *Repository
+	messageRepository   *Repository
+	notificationService notification.Provider
 }
 
-func NewService(repo *Repository) *Service {
+func NewService(repo *Repository, notificationService notification.Provider) *Service {
 	return &Service{
-		messageRepository: repo,
+		messageRepository:   repo,
+		notificationService: notificationService,
 	}
 }
 

@@ -12,6 +12,7 @@ import (
 	_ "message-sender/docs"
 	"message-sender/internal/common/database"
 	"message-sender/internal/messages"
+	"message-sender/internal/notification"
 	"message-sender/internal/pkg/logger"
 	"message-sender/internal/pkg/middleware"
 )
@@ -37,7 +38,14 @@ func migrateDatabase(cfg *config.DatabaseConfig) {
 }
 
 func loadModules(r *gin.Engine, db *pgxpool.Pool) {
-	messages.ConfigureMessagesModule(r, db)
+	// todo: Provider should be configurable from env
+	ns, err := notification.ConfigureNotificationModule(notification.MockSms)
+	if err != nil {
+		logger.Error("Notification Provider Error", err)
+		return
+	}
+
+	messages.ConfigureMessagesModule(r, db, ns)
 }
 
 // @title           Message Sender API
