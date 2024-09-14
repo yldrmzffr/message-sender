@@ -4,6 +4,9 @@ import (
 	"fmt"
 )
 
+// AppError represents an application error
+// @Description represents an application error
+// swagger:model AppError
 type AppError struct {
 	Code      int
 	ErrorCode int    `json:"errorCode" example:"1001"`
