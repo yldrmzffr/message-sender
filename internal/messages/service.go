@@ -3,6 +3,7 @@ package messages
 import (
 	"context"
 	redislib "github.com/redis/go-redis/v9"
+	"message-sender/config"
 	"message-sender/internal/notification"
 	"message-sender/internal/pkg/apperrors"
 	"message-sender/internal/pkg/logger"
@@ -10,6 +11,7 @@ import (
 )
 
 type Service struct {
+	config              config.MessagesConfig
 	messageRepository   *Repository
 	notificationService notification.Provider
 	redisClient         *redislib.Client
@@ -17,8 +19,9 @@ type Service struct {
 	isRunning           bool
 }
 
-func NewService(repo *Repository, notificationService notification.Provider, redisClient *redislib.Client) *Service {
+func NewService(config config.MessagesConfig, repo *Repository, notificationService notification.Provider, redisClient *redislib.Client) *Service {
 	s := &Service{
+		config:              config,
 		messageRepository:   repo,
 		notificationService: notificationService,
 		redisClient:         redisClient,
@@ -26,7 +29,9 @@ func NewService(repo *Repository, notificationService notification.Provider, red
 		isRunning:           false,
 	}
 
-	go s.StartSendingMessages(context.Background())
+	if config.AutoStart == true {
+		go s.StartSendingMessages(context.Background())
+	}
 
 	return s
 }
@@ -144,8 +149,9 @@ func (s *Service) sendAndUpdateMessage(ctx context.Context, message *Message) {
 }
 
 func (s *Service) messageLoop(ctx context.Context) {
-	// todo: move the interval to ENV config
-	ticker := time.NewTicker(5 * time.Second)
+	internal := time.Duration(s.config.Interval) * time.Second
+
+	ticker := time.NewTicker(internal)
 	defer ticker.Stop()
 
 	for {

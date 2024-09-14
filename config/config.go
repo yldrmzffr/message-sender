@@ -3,10 +3,12 @@ package config
 import "fmt"
 
 type Config struct {
-	Service  ServiceConfig
-	Log      LogConfig
-	Database DatabaseConfig
-	Redis    RedisConfig
+	Service      ServiceConfig
+	Log          LogConfig
+	Database     DatabaseConfig
+	Redis        RedisConfig
+	Notification NotificationConfig
+	Messages     MessagesConfig
 }
 
 type ServiceConfig struct {
@@ -25,6 +27,15 @@ type DatabaseConfig struct {
 	User     string `split_words:"true" required:"true"`
 	Password string `split_words:"true" required:"true"`
 	Database string `split_words:"true" required:"true"`
+}
+
+type NotificationConfig struct {
+	Provider string `split_words:"true" required:"true" default:"mock"`
+}
+
+type MessagesConfig struct {
+	AutoStart bool `split_words:"true" required:"true" default:"true"`
+	Interval  int  `split_words:"true" required:"true" default:"120"` // seconds
 }
 
 type RedisConfig struct {
