@@ -6,11 +6,11 @@ import (
 	"message-sender/internal/pkg/logger"
 )
 
-type PostgresConfig struct {
+type PostgreConfig struct {
 	DSN string
 }
 
-func NewPostgresDatabase(ctx context.Context, config *PostgresConfig) (*pgxpool.Pool, error) {
+func NewPostgresDatabase(ctx context.Context, config *PostgreConfig) (*pgxpool.Pool, error) {
 	logger.Info("PostgreSQL Starting...")
 
 	poolConfig, err := pgxpool.ParseConfig(config.DSN)

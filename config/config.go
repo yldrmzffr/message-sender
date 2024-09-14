@@ -6,6 +6,7 @@ type Config struct {
 	Service  ServiceConfig
 	Log      LogConfig
 	Database DatabaseConfig
+	Redis    RedisConfig
 }
 
 type ServiceConfig struct {
@@ -24,6 +25,10 @@ type DatabaseConfig struct {
 	User     string `split_words:"true" required:"true"`
 	Password string `split_words:"true" required:"true"`
 	Database string `split_words:"true" required:"true"`
+}
+
+type RedisConfig struct {
+	Url string `split_words:"true" required:"true"`
 }
 
 func (d DatabaseConfig) GetDSN() string {

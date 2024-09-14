@@ -2,6 +2,7 @@ package messages
 
 import (
 	"context"
+	redislib "github.com/redis/go-redis/v9"
 	"message-sender/internal/notification"
 	"message-sender/internal/pkg/apperrors"
 	"message-sender/internal/pkg/logger"
@@ -11,14 +12,16 @@ import (
 type Service struct {
 	messageRepository   *Repository
 	notificationService notification.Provider
+	redisClient         *redislib.Client
 	stopChan            chan struct{}
 	isRunning           bool
 }
 
-func NewService(repo *Repository, notificationService notification.Provider) *Service {
+func NewService(repo *Repository, notificationService notification.Provider, redisClient *redislib.Client) *Service {
 	s := &Service{
 		messageRepository:   repo,
 		notificationService: notificationService,
+		redisClient:         redisClient,
 		stopChan:            make(chan struct{}),
 		isRunning:           false,
 	}
@@ -131,6 +134,12 @@ func (s *Service) sendAndUpdateMessage(ctx context.Context, message *Message) {
 		return
 	}
 
+	err = s.SaveReceivedMessageToRedis(ctx, message, response)
+	if err != nil {
+		logger.Error("Failed to save received message to redis", err)
+		return
+	}
+
 	return
 }
 
@@ -155,4 +164,20 @@ func (s *Service) messageLoop(ctx context.Context) {
 			return
 		}
 	}
+}
+
+func (s *Service) SaveReceivedMessageToRedis(ctx context.Context, message *Message, response *notification.ProviderSuccessResponse) error {
+	logger.Debug("Saving received message to redis", message)
+
+	const redisPrefix = "RECEIVED_MESSAGES"
+
+	err := s.redisClient.HSet(ctx, redisPrefix, message.ID, response.MessageID).Err()
+	if err != nil {
+		logger.Error("Failed to save received message to redis", err)
+		return apperrors.ErrorInternalServer
+	}
+
+	logger.Debug("Received message saved to redis", message)
+
+	return nil
 }

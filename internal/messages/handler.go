@@ -66,19 +66,7 @@ func (h *Handler) GetSentMessages(ctx *gin.Context) {
 		return
 	}
 
-	response := make([]MessageResponse, 0)
-	for _, message := range messages {
-		response = append(response, MessageResponse{
-			ID:          message.ID,
-			Recipient:   message.Recipient,
-			Content:     message.Content,
-			Status:      message.Status,
-			CreatedAt:   message.CreatedAt.Format(time.RFC3339),
-			CompletedAt: message.CompletedAt.Format(time.RFC3339),
-		})
-	}
-
-	ctx.JSON(200, response)
+	ctx.JSON(200, messages)
 }
 
 // ControlMessageSending @Summary Control message sending
