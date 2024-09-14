@@ -49,3 +49,34 @@ func (h *Handler) CreateMessage(ctx *gin.Context) {
 
 	ctx.JSON(201, response)
 }
+
+// GetSentMessages @Summary Get sent messages
+// @Summary Get sent messages
+// @Description Get sent messages
+// @Tags Message
+// @Accept json
+// @Produce json
+// @Success 200 {array} MessageResponse "Sent messages"
+// @Failure 500 {object} apperrors.ErrorResponse "Internal Server Error"
+// @Router /messages/sent [get]
+func (h *Handler) GetSentMessages(ctx *gin.Context) {
+	messages, err := h.service.GetSentMessages(ctx)
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
+
+	response := make([]MessageResponse, 0)
+	for _, message := range messages {
+		response = append(response, MessageResponse{
+			ID:          message.ID,
+			Recipient:   message.Recipient,
+			Content:     message.Content,
+			Status:      message.Status,
+			CreatedAt:   message.CreatedAt.Format(time.RFC3339),
+			CompletedAt: message.CompletedAt.Format(time.RFC3339),
+		})
+	}
+
+	ctx.JSON(200, response)
+}

@@ -25,3 +25,13 @@ func (s *Service) CreateMessage(ctx context.Context, message *CreateMessageReque
 
 	return createdMessage, nil
 }
+
+func (s *Service) GetSentMessages(ctx context.Context) ([]*Message, error) {
+	logger.Debug("Getting sent messages")
+	messages, err := s.messageRepository.GetSentMessages(ctx)
+	if err != nil {
+		return nil, apperrors.ErrorInternalServer
+	}
+
+	return messages, nil
+}
