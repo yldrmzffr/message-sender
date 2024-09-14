@@ -1,8 +1,8 @@
 package notification
 
 const (
-	MockSms = "MockNotification"
-	GCPSms  = "GoogleCloudPlatformSms"
+	MockSms = "mock"
+	GCPSms  = "gcp"
 )
 
 type ProviderSuccessResponse struct {

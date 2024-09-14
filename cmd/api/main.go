@@ -39,15 +39,14 @@ func migrateDatabase(cfg *config.DatabaseConfig) {
 	}
 }
 
-func loadModules(r *gin.Engine, db *pgxpool.Pool, rdsCli *redislib.Client) {
-	// todo: Provider should be configurable from env
-	ns, err := notification.ConfigureNotificationModule(notification.MockSms)
+func loadModules(r *gin.Engine, cfg *config.Config, db *pgxpool.Pool, rdsCli *redislib.Client) {
+	ns, err := notification.ConfigureNotificationModule(cfg.Notification.Provider)
 	if err != nil {
 		logger.Error("Notification Provider Error", err)
 		return
 	}
 
-	messages.ConfigureMessagesModule(r, db, ns, rdsCli)
+	messages.ConfigureMessagesModule(r, &cfg.Messages, db, ns, rdsCli)
 }
 
 // @title           Message Sender API
@@ -98,7 +97,7 @@ func main() {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Register modules
-	loadModules(r, db, rdsCli)
+	loadModules(r, &cfg, db, rdsCli)
 
 	port := cfg.Service.Port
 
