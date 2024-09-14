@@ -39,7 +39,8 @@ jobs:
             --platform managed \
             --region ${{ env.REGION }} \
             --allow-unauthenticated \
-            --port 8080
+            --port 8080 \
+            --set-env-vars=PROJECT_ID=${{ env.PROJECT_ID }}
 
       - name: Show Output URL
         run: gcloud run services describe ${{ env.SERVICE_NAME }} --platform managed --region ${{ env.REGION }} --format 'value(status.url)'
