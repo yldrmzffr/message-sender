@@ -17,3 +17,9 @@ type MessageResponse struct {
 	CreatedAt   string `json:"createdAt" example:"2021-01-01T00:00:00Z"`
 	CompletedAt string `json:"completedAt,omitempty" example:"2021-01-01T00:00:00Z"`
 }
+
+// ControlResponse represents the response body for control operations
+// swagger:response ControlResponse
+type ControlResponse struct {
+	Message string `json:"message" example:"Automatic message sending has been stopped"`
+}

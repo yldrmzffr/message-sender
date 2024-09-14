@@ -47,5 +47,41 @@ func (r *Repository) GetSentMessages(ctx context.Context) ([]*Message, error) {
 	}
 
 	return messages, nil
+}
 
+func (r *Repository) GetPendingMessages(ctx context.Context, limit *int) ([]*Message, error) {
+	query := `SELECT id, recipient, content, status, created_at, completed_at FROM messages WHERE status = 'pending'`
+
+	if limit != nil {
+		query += " LIMIT $1"
+	}
+
+	rows, err := r.db.Query(ctx, query, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	messages := make([]*Message, 0)
+	for rows.Next() {
+		message := &Message{}
+		err := rows.Scan(&message.ID, &message.Recipient, &message.Content, &message.Status, &message.CreatedAt, &message.CompletedAt)
+		if err != nil {
+			return nil, err
+		}
+		messages = append(messages, message)
+	}
+
+	return messages, nil
+}
+
+func (r *Repository) SetSentStatusAndUpdateCompletedAt(ctx context.Context, messageID uint) error {
+	query := `UPDATE messages SET status = 'sent', completed_at = NOW() WHERE id = $1`
+
+	_, err := r.db.Exec(ctx, query, messageID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

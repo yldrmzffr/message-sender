@@ -80,3 +80,29 @@ func (h *Handler) GetSentMessages(ctx *gin.Context) {
 
 	ctx.JSON(200, response)
 }
+
+// ControlMessageSending @Summary Control message sending
+// @Summary Control message sending
+// @Description Control message sending
+// @Tags Message
+// @Accept json
+// @Produce json
+// @Param action query string true "Action to perform" Enums(start, stop)
+// @Success 200 {object} ControlResponse "Success"
+// @Failure 400 {object} apperrors.ErrorResponse "Bad Request"
+// @Failure 500 {object} apperrors.ErrorResponse "Internal Server Error"
+// @Router /messages/control [post]
+func (h *Handler) ControlMessageSending(ctx *gin.Context) {
+	action := ctx.Query("action")
+	err := h.service.ControlMessageSending(ctx, action)
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
+
+	message := "Automatic message sending has been " + action + "ed"
+
+	ctx.JSON(200, ControlResponse{
+		Message: message,
+	})
+}

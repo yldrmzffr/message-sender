@@ -15,7 +15,7 @@ type ServiceConfig struct {
 }
 
 type LogConfig struct {
-	Level string `split_words:"true" default:"INFO"`
+	Level string `split_words:"true" default:"DEBUG"`
 }
 
 type DatabaseConfig struct {
