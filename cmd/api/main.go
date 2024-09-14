@@ -13,6 +13,7 @@ import (
 	_ "message-sender/docs"
 	"message-sender/internal/common/database"
 	"message-sender/internal/common/redis"
+	"message-sender/internal/health"
 	"message-sender/internal/messages"
 	"message-sender/internal/notification"
 	"message-sender/internal/pkg/logger"
@@ -40,6 +41,7 @@ func migrateDatabase(cfg *config.DatabaseConfig) {
 }
 
 func loadModules(r *gin.Engine, cfg *config.Config, db *pgxpool.Pool, rdsCli *redislib.Client) {
+	health.ConfigureHealthModules(r)
 	ns, err := notification.ConfigureNotificationModule(cfg.Notification.Provider)
 	if err != nil {
 		logger.Error("Notification Provider Error", err)
