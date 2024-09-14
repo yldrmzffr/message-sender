@@ -18,7 +18,7 @@ func InitLogger(cfg *config.LogConfig) {
 
 		level, err := zapcore.ParseLevel(cfg.Level)
 		if err != nil {
-			level = zapcore.InfoLevel
+			level = zapcore.DebugLevel
 		}
 
 		zapConfig.Level.SetLevel(level)
