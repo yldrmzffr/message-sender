@@ -23,6 +23,7 @@ services:
       - REDIS_URL=redis://redis:6380/0
       - NOTIFICATION_PROVIDER=mock
       - MESSAGES_AUTO_START=true
+      - MESSAGES_BATCH_SIZE=2
       - MESSAGES_INTERVAL=120
     networks:
       - app-network

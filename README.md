@@ -73,21 +73,22 @@ An automated message sending system built with Go.
 
 ## Configuration
 
-| Environment Variable | Description                                | Default Value | Alternatives                                                      |
-|----------------------|--------------------------------------------|---------------|-------------------------------------------------------------------|
-| SERVICE_ENV | Application environment                    | dev | prod, staging                                                     |
-| SERVICE_NAME | Application name                           | boilerplate | Any valid application name                                        |
-| SERVICE_PORT | Application port                           | 8080 | Any valid port number                                             |
-| LOG_LEVEL | Logging level                              | DEBUG | INFO, WARN, ERROR                                                 |
-| DATABASE_HOST | PostgreSQL host                            | (Required) | localhost, postgres, db.example.com                              |
-| DATABASE_PORT | PostgreSQL port                            | (Required) | 5432, Any valid port number                                      |
-| DATABASE_USER | PostgreSQL username                        | (Required) | Any valid username                                                |
-| DATABASE_PASSWORD | PostgreSQL password                        | (Required) | Any secure password                                               |
-| DATABASE_DATABASE | PostgreSQL database name                   | (Required) | Any valid database name                                           |
-| REDIS_URL | Redis URL                                  | (Required) | redis://localhost:6379/0, redis://redis:6380/0                   |
-| NOTIFICATION_PROVIDER | Notification provider                      | mock | gcp                                                                |
-| MESSAGES_AUTO_START | Auto-start message sending on app starting | true | false                                                              |
-| MESSAGES_INTERVAL | Message sending interval (seconds)         | 120 | Any positive integer                                              |
+| Environment Variable  | Description                                       | Default Value | Alternatives                                   |
+|-----------------------|---------------------------------------------------|---------------|------------------------------------------------|
+| SERVICE_ENV           | Application environment                           | dev           | prod, staging                                  |
+| SERVICE_NAME          | Application name                                  | boilerplate   | Any valid application name                     |
+| SERVICE_PORT          | Application port                                  | 8080          | Any valid port number                          |
+| LOG_LEVEL             | Logging level                                     | DEBUG         | INFO, WARN, ERROR                              |
+| DATABASE_HOST         | PostgreSQL host                                   | (Required)    | localhost, postgres, db.example.com            |
+| DATABASE_PORT         | PostgreSQL port                                   | (Required)    | 5432, Any valid port number                    |
+| DATABASE_USER         | PostgreSQL username                               | (Required)    | Any valid username                             |
+| DATABASE_PASSWORD     | PostgreSQL password                               | (Required)    | Any secure password                            |
+| DATABASE_DATABASE     | PostgreSQL database name                          | (Required)    | Any valid database name                        |
+| REDIS_URL             | Redis URL                                         | (Required)    | redis://localhost:6379/0, redis://redis:6380/0 |
+| NOTIFICATION_PROVIDER | Notification provider                             | mock          | gcp                                            |
+| MESSAGES_AUTO_START   | Auto-start message sending on app starting        | true          | false                                          |
+| MESSAGES_BATCH_SIZE   | The number of messages to be sent in each cycle.  | 2             | Any positive integer                           |
+| MESSAGES_INTERVAL     | Message sending interval (seconds)                | 120           | Any positive integer                           |
 
 To use these configurations for local development, you can set them as environment variables or include them in your `.env` file. For Docker deployments, they are already included in your `docker-compose.yml` file under the `environment` section of the relevant service.
 
@@ -95,7 +96,7 @@ Example `.env` file for local development:
 
 ```
 SERVICE_ENV=dev
-SERVICE_NAME=boilerplate
+SERVICE_NAME=message-sender
 SERVICE_PORT=8080
 LOG_LEVEL=DEBUG
 DATABASE_HOST=localhost
@@ -106,6 +107,7 @@ DATABASE_DATABASE=message_sender_db
 REDIS_URL=redis://localhost:6379/0
 NOTIFICATION_PROVIDER=mock
 MESSAGES_AUTO_START=true
+MESSAGES_BATCH_SIZE=2
 MESSAGES_INTERVAL=120
 ```
 

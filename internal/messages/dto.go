@@ -23,3 +23,17 @@ type MessageResponse struct {
 type ControlResponse struct {
 	Message string `json:"message" example:"Automatic message sending has been stopped"`
 }
+
+// MessageDetailsResponse represents the details of a message
+// swagger:response MessageDetailsResponse
+type MessageDetailsResponse struct {
+	*Message         `json:",inline" swagger:"object,Message"`
+	ProviderResponse *RedisRecord `json:"providerResponse" swagger:"object,RedisRecord"`
+}
+
+// RedisRecord represents a record to be saved in Redis
+// swagger:model RedisRecord
+type RedisRecord struct {
+	MessageId string `json:"messageId" example:"730e0f3e-663b-4962-bf86-b768290b7d49"`
+	Provider  string `json:"provider" example:"gcp"`
+}
