@@ -3,6 +3,7 @@ package messages
 import (
 	"github.com/gin-gonic/gin"
 	"message-sender/internal/pkg/apperrors"
+	"strconv"
 	"time"
 )
 
@@ -93,4 +94,64 @@ func (h *Handler) ControlMessageSending(ctx *gin.Context) {
 	ctx.JSON(200, ControlResponse{
 		Message: message,
 	})
+}
+
+// GetMessageByID @Summary Get message by ID
+// @Summary Get message by ID
+// @Description Get message details by ID
+// @Tags Message
+// @Accept json
+// @Produce json
+// @Param id path int true "Message ID"
+// @Success 200 {object} MessageDetailsResponse "Message details"
+// @Failure 404 {object} apperrors.ErrorResponse "Not Found"
+// @Failure 500 {object} apperrors.ErrorResponse "Internal Server Error"
+// @Router /messages/{id} [get]
+func (h *Handler) GetMessageByID(ctx *gin.Context) {
+	messageID := ctx.Param("id")
+	id, err := strconv.Atoi(messageID)
+	if err != nil {
+		ctx.Error(apperrors.ErrorValidation)
+		return
+	}
+
+	message, err := h.service.GetMessageByID(ctx, uint(id))
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
+
+	ctx.JSON(200, message)
+}
+
+// GetMessagesWithStatus @Summary Get messages with status
+// @Summary Get messages with status
+// @Description Get messages with status
+// @Tags Message,teST
+// @Accept json
+// @Produce json
+// @Param status query string false "Message status" Enums(sent, pending)
+// @Success 200 {array} MessageResponse "Messages"
+// @Failure 500 {object} apperrors.ErrorResponse "Internal Server Error"
+// @Router /messages [get]
+func (h *Handler) GetMessagesWithStatus(ctx *gin.Context) {
+	status := ctx.Query("status")
+	var messages []*Message
+	var err error
+	switch status {
+	case string(StatusSend):
+		messages, err = h.service.GetSentMessages(ctx)
+	case string(StatusPending):
+		messages, err = h.service.GetPendingMessages(ctx)
+	default:
+		ctx.Error(apperrors.ErrorValidation)
+		return
+	}
+
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
+
+	ctx.JSON(200, messages)
 }

@@ -2,13 +2,17 @@ package messages
 
 import (
 	"context"
+	"encoding/json"
 	redislib "github.com/redis/go-redis/v9"
 	"message-sender/config"
 	"message-sender/internal/notification"
 	"message-sender/internal/pkg/apperrors"
 	"message-sender/internal/pkg/logger"
+	"strconv"
 	"time"
 )
+
+const redisPrefix = "RECEIVED_MESSAGES"
 
 type Service struct {
 	config              config.MessagesConfig
@@ -46,6 +50,35 @@ func (s *Service) CreateMessage(ctx context.Context, message *CreateMessageReque
 	return createdMessage, nil
 }
 
+func (s *Service) GetMessageByID(ctx context.Context, messageID uint) (*MessageDetailsResponse, error) {
+	logger.Debug("Getting message by ID", messageID)
+	message, err := s.messageRepository.GetByID(ctx, messageID)
+	if err != nil {
+		return nil, ErrMessageNotFound
+	}
+
+	res := &MessageDetailsResponse{
+		Message: message,
+	}
+
+	strMessageID := strconv.Itoa(int(message.ID))
+
+	if message.Status == StatusSend {
+		r, err := s.redisClient.HGet(ctx, redisPrefix, strMessageID).Result()
+		if err != nil {
+			logger.Error("Failed to get received message from redis", err)
+			return res, nil
+		}
+
+		redisRes := &RedisRecord{}
+		json.Unmarshal([]byte(r), &redisRes)
+		res.ProviderResponse = redisRes
+	}
+
+	return res, nil
+
+}
+
 func (s *Service) GetSentMessages(ctx context.Context) ([]*Message, error) {
 	logger.Debug("Getting sent messages")
 	messages, err := s.messageRepository.GetSentMessages(ctx)
@@ -56,9 +89,19 @@ func (s *Service) GetSentMessages(ctx context.Context) ([]*Message, error) {
 	return messages, nil
 }
 
-func (s *Service) GetPendingMessages(ctx context.Context, limit int) ([]*Message, error) {
+func (s *Service) GetPendingMessages(ctx context.Context) ([]*Message, error) {
 	logger.Debug("Getting pending messages")
-	messages, err := s.messageRepository.GetPendingMessages(ctx, &limit)
+	messages, err := s.messageRepository.GetPendingMessages(ctx)
+	if err != nil {
+		return nil, apperrors.ErrorInternalServer
+	}
+
+	return messages, nil
+}
+
+func (s *Service) GetPendingMessagesWithLimit(ctx context.Context, limit *int) ([]*Message, error) {
+	logger.Debug("Getting pending messages")
+	messages, err := s.messageRepository.GetPendingMessagesWithLimit(ctx, limit)
 	if err != nil {
 		return nil, apperrors.ErrorInternalServer
 	}
@@ -107,7 +150,10 @@ func (s *Service) StopSendingMessages(ctx context.Context) error {
 
 func (s *Service) SendMessages(ctx context.Context) error {
 	logger.Debug("Sending messages")
-	messages, err := s.GetPendingMessages(ctx, 2)
+
+	limit := s.config.BatchSize
+
+	messages, err := s.GetPendingMessagesWithLimit(ctx, &limit)
 	if err != nil {
 		return apperrors.ErrorInternalServer
 	}
@@ -175,9 +221,17 @@ func (s *Service) messageLoop(ctx context.Context) {
 func (s *Service) SaveReceivedMessageToRedis(ctx context.Context, message *Message, response *notification.ProviderSuccessResponse) error {
 	logger.Debug("Saving received message to redis", message)
 
-	const redisPrefix = "RECEIVED_MESSAGES"
+	r, err := json.Marshal(&RedisRecord{
+		MessageId: response.MessageID,
+		Provider:  response.SelectedProvider,
+	})
 
-	err := s.redisClient.HSet(ctx, redisPrefix, message.ID, response.MessageID).Err()
+	if err != nil {
+		logger.Error("Failed to marshal received message", err)
+		return apperrors.ErrorInternalServer
+	}
+
+	err = s.redisClient.HSet(ctx, redisPrefix, message.ID, r).Err()
 	if err != nil {
 		logger.Error("Failed to save received message to redis", err)
 		return apperrors.ErrorInternalServer

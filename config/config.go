@@ -34,6 +34,7 @@ type NotificationConfig struct {
 }
 
 type MessagesConfig struct {
+	BatchSize int  `split_words:"true" required:"true" default:"2"`
 	AutoStart bool `split_words:"true" required:"true" default:"true"`
 	Interval  int  `split_words:"true" required:"true" default:"120"` // seconds
 }
